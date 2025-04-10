@@ -1,0 +1,13 @@
+server:
+  extraArgs:
+    - --insecure
+  service:
+    type: LoadBalancer
+
+configs:
+  cm:
+    timeout.reconciliation: 180s
+    application.instanceLabelKey: argocd.argoproj.io/instance
+
+  rbac:
+    policy.default: role:readonly 
