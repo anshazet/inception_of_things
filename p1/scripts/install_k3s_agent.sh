@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Update system first
-apt-get update
+# Update system
+apt-get update -y
 apt-get upgrade -y
 
 # Wait for the server token to be available
@@ -9,6 +9,8 @@ while [ ! -f /vagrant/confs/node-token ]; do
   echo "Waiting for server node-token..."
   sleep 5
 done
+
+echo "Node token found. Proceeding with installation..."
 
 # Get the token
 export K3S_TOKEN=$(cat /vagrant/confs/node-token)
@@ -25,5 +27,5 @@ echo "export K3S_TOKEN=${K3S_TOKEN}" >> /home/vagrant/.bashrc
 echo "export K3S_URL=${K3S_URL}" >> /home/vagrant/.bashrc
 
 # Wait for k3s to be ready
-sleep 5
+sleep 10
 echo "K3s Agent installation complete!" 
