@@ -23,8 +23,18 @@ Vagrant.configure("2") do |config|
     worker.vm.hostname = "tde-los-SW"
     worker.vm.network "private_network", ip: "192.168.56.111"
 
+    # Ajout d'une dépendance pour forcer l'ordre
+    worker.vm.provision "wait-for-server", type: "shell", inline: <<-SHELL
+      echo "Waiting for node-token to be created..."
+      while [ ! -f /vagrant/confs/node-token ]; do
+        sleep 2
+      done
+      echo "node-token found!"
+    SHELL
+
     worker.vm.provision "shell", path: "scripts/install_agent.sh"
   end
+
 end
 
 
