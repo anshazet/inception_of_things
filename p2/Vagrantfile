@@ -1,26 +1,23 @@
-Vagrant.configure("2") do |config|
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do | config |
 	# Common configuration for the VM
-	config.vm.box = "generic/ubuntu2204"
-	config.vm.boot_timeout = 600 # Boot timeout to 10 minutes
-	
-	# Basic SSH settings
-	config.ssh.insert_key = true
-	config.ssh.forward_agent = true
-	
-	# K3s Server VM
-	config.vm.define "tde-los-S" do |server|
-	  server.vm.hostname = "tde-los-S"
-	  server.vm.network "private_network", ip: "192.168.56.110"
-	  
-	  # VirtualBox config
-	  server.vm.provider "virtualbox" do |vb|
-		vb.memory = 2048  # Give a bit more memory to handle all apps
-		vb.cpus = 2       # Give 2 CPUs for better performance
-		vb.name = "tde-los-S"
-	  end
-	  
-	  # Provisioning
-	  server.vm.provision "shell", path: "scripts/install_k3s.sh"
-	  server.vm.provision "shell", path: "scripts/deploy_apps.sh"
+	config.vm.box = "ubuntu/focal64"
+
+	# Configuration globale pour VirtualBox
+	config.vm.provider "virtualbox" do |vb|
+	  vb.memory = 2048
+	  vb.cpus = 2
+	end
+
+	# === Serveur K3s ===
+	config.vm.define "tde-los-S" do | server |
+		server.vm.hostname = "tde-los-S"
+		server.vm.network "private_network", ip: "192.168.56.110"
+
+	  	# Provisioning
+		server.vm.provision "shell", path: "scripts/install_k3s.sh"
+		# server.vm.provision "shell", path: "scripts/deploy_apps.sh"
 	end
   end

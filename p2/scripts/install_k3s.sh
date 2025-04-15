@@ -1,27 +1,36 @@
 #!/bin/bash
+set -e
 
-# Update system
+# Mise à jour du système et installation d'outils nécessaires
 apt-get update -y
 apt-get upgrade -y
 
-# Set the hostname based on the login
-sudo hostnamectl set-hostname tde-los-S
-
-# Install K3s with Traefik Ingress Controller enabled (default)
-# We're not disabling traefik because we need the ingress controller
-export INSTALL_K3S_EXEC="--bind-address=192.168.56.110 --node-ip=192.168.56.110"
+# Installation de K3s en mode serveur
 curl -sfL https://get.k3s.io | sh -
 
-# Make kubectl available for non-root user
-mkdir -p $HOME/.kube
-sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-chmod 600 $HOME/.kube/config
+# Attendre que K3s soit bien démarré
+sleep 10
 
-# Install required packages
-apt-get install -y curl
+# Définir le fichier de configuration kubectl
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 
-# Update hosts file to include the application domains
-echo "127.0.0.1 app1.com app2.com" >> /etc/hosts
+# Lier kubectl dans /usr/bin pour facilité d'utilisation
+ln -sf /usr/local/bin/kubectl /usr/bin/kubectl
 
-echo "K3s installation complete on tde-los-S!"
+# (Optionnel) Installation de Helm pour faciliter le déploiement d'applications
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+# Copier les applications depuis le dossier partagé (synced folder) vers un emplacement dédié
+mkdir -p /home/vagrant/app
+cp -R /vagrant/confs/app/* /home/vagrant/app/
+chown -R vagrant:vagrant /home/vagrant/app
+
+# Appliquer les manifestes Kubernetes (depuis le dossier k8s)
+for manifest in /vagrant/confs/*.yaml; do
+  echo "Appliquer $manifest"
+  kubectl apply -f "$manifest"
+done
+
+echo "Installation du serveur K3s et déploiement des applications terminés."
+
+

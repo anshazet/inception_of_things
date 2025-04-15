@@ -1,15 +1,11 @@
-# Ingress configuration for routing based on hostname
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: app-ingress
+  name: apps-ingress
   annotations:
-    # These annotations help configure Traefik properly
-    kubernetes.io/ingress.class: "traefik"
     traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   rules:
-  # Route requests for app1.com to app-one service
   - host: app1.com
     http:
       paths:
@@ -17,11 +13,9 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: app-one
+            name: app1
             port:
               number: 80
-              
-  # Route requests for app2.com to app-two service
   - host: app2.com
     http:
       paths:
@@ -29,17 +23,16 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: app-two
+            name: app2
             port:
               number: 80
-              
-  # Default backend for all other hosts (app3)
-  - http:
+  - host: ""
+    http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: app-three
+            name: app3
             port:
               number: 80
