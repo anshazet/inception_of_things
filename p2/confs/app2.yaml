@@ -1,37 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-one
+  name: app-two
   labels:
-    app: app-one
+    app: app-two
 spec:
-  replicas: 1
+  replicas: 3  # Three replicas as required
   selector:
     matchLabels:
-      app: app-one
+      app: app-two
   template:
     metadata:
       labels:
-        app: app-one
+        app: app-two
     spec:
       containers:
-      - name: app-one
+      - name: app-two
         image: paulbouwer/hello-kubernetes:1.10
         ports:
         - containerPort: 8080
         env:
         - name: MESSAGE
-          value: "Hello from app1."
+          value: "Hello from app2."  # Custom message for app2
 
 ---
+# App2 Service
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-one
+  name: app-two
 spec:
   selector:
-    app: app-one
+    app: app-two
   ports:
   - port: 80
     targetPort: 8080
-  type: ClusterIP 

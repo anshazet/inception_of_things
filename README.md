@@ -20,6 +20,28 @@ vagrant up --provider=parallels
 cd p2
 # Instructions to run part 2
 ```
+# Make the scripts executable
+chmod +x p2/scripts/install_k3s.sh
+chmod +x p2/scripts/deploy_apps.sh
+
+# Install K3s your VM
+./p2/scripts/install_k3s.sh
+
+# Deploy the applications
+./p2/scripts/deploy_apps.sh
+
+# Add to hosts file (on local machine)
+192.168.56.110 app1.com app2.com
+
+# Access the applications:
+http://app1.com - Should show "Hello from app1"
+http://app2.com - Should show "Hello from app2"
+http://192.168.56.110 - Should show "Hello from app3" (default)
+
+# To check if everythis is working
+kubectl get all
+kubectl get ingress
+kubectl describe ingress app-ingress
 
 ### Part 3: K3d + ArgoCD + GitHub CI/CD
 ```
