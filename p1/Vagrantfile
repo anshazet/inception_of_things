@@ -2,44 +2,29 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  # Common configuration for all VMs
-  config.vm.box = "roboxes/ubuntu2204"
+  config.vm.box = "ubuntu/focal64"
 
-  config.vm.boot_timeout = 600 # Boot timeout to 10 minutes
-  
-  # Basic SSH settings
-  config.ssh.insert_key = true
-  config.ssh.forward_agent = true
+  # Configuration globale pour VirtualBox
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 1024
+    vb.cpus = 1
+  end
 
-  # Server VM
-  config.vm.define "acoezardS" do |server|
-    server.vm.hostname = "acoezardS"
+  # === Serveur K3s ===
+  config.vm.define "tde-los-S" do | server |
+    server.vm.hostname = "tde-los-S"
     server.vm.network "private_network", ip: "192.168.56.110"
-    
-    # VirtualBox config - for running inside UTM VM
-    server.vm.provider "virtualbox" do |vb|
-      vb.memory = 1024  # 1024MB as recommended in the subject
-      vb.cpus = 1       # 1 CPU as recommended in the subject
-      vb.name = "acoezardS"
-    end
-    
-    # Provisioning
-    server.vm.provision "shell", path: "scripts/install_k3s_server.sh"
+
+    server.vm.provision "shell", path: "scripts/install_server.sh"
   end
-  
-  # Worker VM
-  config.vm.define "acoezardSW" do |worker|
-    worker.vm.hostname = "acoezardSW"
+
+  # === Agent K3s ===
+  config.vm.define "tde-los-SW" do | worker |
+    worker.vm.hostname = "tde-los-SW"
     worker.vm.network "private_network", ip: "192.168.56.111"
-    
-    # VirtualBox config - for running inside UTM VM
-    worker.vm.provider "virtualbox" do |vb|
-      vb.memory = 1024  # Use 1024MB as recommended in the subject
-      vb.cpus = 1       # Use 1 CPU as recommended in the subject
-      vb.name = "acoezardSW"
-    end
-    
-    # Provisioning
-    worker.vm.provision "shell", path: "scripts/install_k3s_agent.sh"
+
+    worker.vm.provision "shell", path: "scripts/install_agent.sh"
   end
-end 
+end
+
+
