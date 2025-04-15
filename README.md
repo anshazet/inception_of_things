@@ -12,7 +12,7 @@ This project introduces infrastructure as code (IaC) concepts by setting up and 
 ### Part 1: Vagrant + K3s Setup
 ```
 cd p1
-vagrant up --provider=parallels
+vagrant up
 ```
 
 ### Part 2: K3s + 3 Apps + Ingress
@@ -74,7 +74,7 @@ vagrant up --provider=parallels
 sudo xcode-select --install      # (if not installed yet)
 sudo spctl --master-disable      # (to allow apps from anywhere)
 
-# install plugin 
+# install plugin
 vagrant plugin install vagrant-parallels
 ----------
 
