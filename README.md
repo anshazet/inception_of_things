@@ -48,6 +48,25 @@ kubectl describe ingress app-ingress
 cd p3
 # Instructions to run part 3
 ```
+# install
+brew install k3d
+brew install kubectl
+
+chmod +x p3/scripts/setup.sh
+chmod +x p3/scripts/deploy.sh
+
+# Run setup script
+cd p3/scripts
+./setup.sh
+./deploy.sh
+
+# Once setup is complete, run deploy script
+./deploy.sh
+
+# Test if the app is working
+curl http://localhost:8888/
+# Should return {"status":"ok", "message": "v1"}
+
 
 ### Bonus: GitLab Integration (Optional)
 ```
