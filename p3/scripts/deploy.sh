@@ -28,24 +28,34 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 
 # Wait for Argo CD to be ready
 echo -e "${GREEN}Waiting for Argo CD to be ready...${NC}"
-kubectl rollout status deployment/argocd-server -n argocd --timeout=300s || {
-  echo -e "${RED}Timeout waiting for argocd-server to become ready.${NC}"
+echo -e "${GREEN}This may take a few minutes...${NC}"
+sleep 30
+
+# Check if argocd-server deployment exists before waiting
+if kubectl get deployment argocd-server -n argocd &>/dev/null; then
+  echo -e "${GREEN}Waiting for argocd-server deployment to be available...${NC}"
+  kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=300s
+else
+  echo -e "${RED}argocd-server deployment not found. Installation may have failed.${NC}"
+  echo -e "${GREEN}Checking what's in the argocd namespace:${NC}"
   kubectl get all -n argocd
   exit 1
-}
+fi
 
-# Wait for argocd-initial-admin-secret to be created
-echo -e "${GREEN}Waiting for Argo CD admin secret to be available...${NC}"
-for i in {1..10}; do
-  ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" 2>/dev/null | base64 -d)
-  if [ -n "$ARGOCD_PASSWORD" ]; then
-    echo -e "${GREEN}Argo CD admin password retrieved.${NC}"
-    break
-  fi
-  echo -e "${RED}Secret not ready yet. Retrying in 5 seconds... ($i/10)${NC}"
-  sleep 5
-done
+# Port forward Argo CD server
+echo -e "${GREEN}Setting up port forwarding for Argo CD server...${NC}"
+echo -e "${GREEN}Argo CD will be available at https://localhost:8080${NC}"
+# Kill any existing port-forward
+pkill -f "kubectl port-forward svc/argocd-server" || true
+# Start new port-forward
+kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &
+ARGOCD_PID=$!
+# Give it a moment to start
+sleep 5
 
+# Get Argo CD admin password
+echo -e "${GREEN}Getting Argo CD admin password...${NC}"
+ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
 if [ -z "$ARGOCD_PASSWORD" ]; then
   echo -e "${RED}Failed to get Argo CD password. Is the secret created?${NC}"
   echo -e "${GREEN}Checking secrets in argocd namespace:${NC}"
@@ -56,18 +66,11 @@ else
   echo -e "${GREEN}Argo CD admin password: ${ARGOCD_PASSWORD}${NC}"
 fi
 
-# Port forward Argo CD server
-echo -e "${GREEN}Setting up port forwarding for Argo CD server...${NC}"
-echo -e "${GREEN}Argo CD will be available at https://localhost:8080${NC}"
-pkill -f "kubectl port-forward svc/argocd-server" || true
-kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &
-ARGOCD_PID=$!
-sleep 5
-
 # Login to Argo CD
 echo -e "${GREEN}Logging in to Argo CD...${NC}"
+# Try multiple times in case the port-forward isn't ready yet
 for i in {1..5}; do
-  argocd login localhost:8080 --username admin --password "$ARGOCD_PASSWORD" --insecure && break || {
+  argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD --insecure && break || {
     echo -e "${RED}Attempt $i failed. Retrying in 5 seconds...${NC}"
     sleep 5
   }
@@ -75,6 +78,7 @@ done
 
 # Check if argocd-application.yaml exists
 if [ -f "$CONFS_DIR/argocd-application.yaml" ]; then
+  # Apply Argo CD application
   echo -e "${GREEN}Creating Argo CD application...${NC}"
   kubectl apply -f "$CONFS_DIR/argocd-application.yaml"
 else
