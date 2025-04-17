@@ -31,7 +31,7 @@ chmod 644 /vagrant/confs/node-token
 
 # Export the token
 echo "export K3S_TOKEN=$(cat /var/lib/rancher/k3s/server/node-token)" >> /home/vagrant/.bashrc
-echo "export K3S_URL=https://192.168.56.110:6442" >> /home/vagrant/.bashrc
+echo "export K3S_URL=https://192.168.56.110:6443" >> /home/vagrant/.bashrc
 
 # Wait for k3s to be ready
 sleep 10
