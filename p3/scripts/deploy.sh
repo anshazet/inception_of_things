@@ -51,7 +51,7 @@ pkill -f "kubectl port-forward svc/argocd-server" || true
 kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &
 ARGOCD_PID=$!
 # Give it a moment to start
-sleep 5
+sleep 60
 
 # Get Argo CD admin password
 echo -e "${GREEN}Getting Argo CD admin password...${NC}"
