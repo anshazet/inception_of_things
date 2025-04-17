@@ -37,7 +37,7 @@ fi
 
 # Create K3d cluster
 echo -e "${GREEN}Creating K3d cluster...${NC}"
-k3d cluster create iot-cluster --api-port 6443 --servers 1 --agents 1 -p "8888:30888@loadbalancer"
+k3d cluster create iot-cluster --api-port 6442 --servers 1 --agents 1 -p "8888:30888@loadbalancer"
 
 # Install Argo CD CLI
 if ! command -v argocd &> /dev/null; then
@@ -48,4 +48,4 @@ else
     echo -e "${GREEN}Argo CD CLI is already installed.${NC}"
 fi
 
-echo -e "${GREEN}Setup completed successfully!${NC}" 
+echo -e "${GREEN}Setup completed successfully!${NC}"
