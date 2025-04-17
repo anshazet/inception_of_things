@@ -29,7 +29,7 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 # Wait for Argo CD to be ready
 echo -e "${GREEN}Waiting for Argo CD to be ready...${NC}"
 echo -e "${GREEN}This may take a few minutes...${NC}"
-sleep 30
+sleep 120
 
 # Check if argocd-server deployment exists before waiting
 if kubectl get deployment argocd-server -n argocd &>/dev/null; then
