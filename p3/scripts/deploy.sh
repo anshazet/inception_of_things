@@ -92,7 +92,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/NineSuper/tde-los-.git
+    repoURL: https://github.com/anshazet/tde-los-.git
     targetRevision: HEAD
     path: manifests
   destination:
