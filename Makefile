@@ -86,9 +86,9 @@ toggle-version:
 	@rm -rf /tmp/tde-los-update
 	@echo "${GREEN}Cloning repository using SSH...${RESET}"
 	@mkdir -p /tmp/tde-los-update
-	@git clone git@github.com:NineSuper/tde-los-.git /tmp/tde-los-update || \
+	@git clone git@github.com:anshazet/tde-los-.git /tmp/tde-los-update || \
 		(echo "${RED}SSH clone failed, trying HTTPS...${RESET}" && \
-		git clone https://github.com/NineSuper/tde-los-.git /tmp/tde-los-update)
+		git clone https://github.com/anshazet/tde-los-.git /tmp/tde-los-update)
 	@cd /tmp/tde-los-update && \
 	if grep -q "v1" manifests/deployment.yaml; then \
 		echo "${GREEN}Changing from v1 to v2...${RESET}"; \
@@ -99,7 +99,7 @@ toggle-version:
 	fi
 	@cd /tmp/tde-los-update && \
 	git add manifests/deployment.yaml && \
-	git config --local user.email "NineSuper@github.com" && \
+	git config --local user.email "anshazet@github.com" && \
 	git config --local user.name "iot-script" && \
 	git commit -m "Toggle application version" && \
 	git push || \
@@ -118,13 +118,13 @@ set-v1:
 	@rm -rf /tmp/tde-los-update
 	@echo "${GREEN}Cloning repository using SSH...${RESET}"
 	@mkdir -p /tmp/tde-los-update
-	@git clone git@github.com:NineSuper/tde-los-.git /tmp/tde-los-update || \
+	@git clone git@github.com:anshazet/tde-los-.git /tmp/tde-los-update || \
 		(echo "${RED}SSH clone failed, trying HTTPS...${RESET}" && \
-		git clone https://github.com/NineSuper/tde-los-.git /tmp/tde-los-update)
+		git clone https://github.com/anshazet/tde-los-.git /tmp/tde-los-update)
 	@cd /tmp/tde-los-update && \
 	sed -i '' 's/wil42\/playground:v[12]/wil42\/playground:v1/g' manifests/deployment.yaml && \
 	git add manifests/deployment.yaml && \
-	git config --local user.email "NineSuper@github.com" && \
+	git config --local user.email "anshazet@github.com" && \
 	git config --local user.name "iot-script" && \
 	git commit -m "Set application to v1" && \
 	git push || \
@@ -143,13 +143,13 @@ set-v2:
 	@rm -rf /tmp/tde-los-update
 	@echo "${GREEN}Cloning repository using SSH...${RESET}"
 	@mkdir -p /tmp/tde-los-update
-	@git clone git@github.com:NineSuper/tde-los-.git /tmp/tde-los-update || \
+	@git clone git@github.com:anshazet/tde-los-.git /tmp/tde-los-update || \
 		(echo "${RED}SSH clone failed, trying HTTPS...${RESET}" && \
-		git clone https://github.com/NineSuper/tde-los-.git /tmp/tde-los-update)
+		git clone https://github.com/anshazet/tde-los-.git /tmp/tde-los-update)
 	@cd /tmp/tde-los-update && \
 	sed -i '' 's/wil42\/playground:v[12]/wil42\/playground:v2/g' manifests/deployment.yaml && \
 	git add manifests/deployment.yaml && \
-	git config --local user.email "NineSuper@github.com" && \
+	git config --local user.email "anshazet@github.com" && \
 	git config --local user.name "iot-script" && \
 	git commit -m "Set application to v2" && \
 	git push || \
@@ -173,6 +173,9 @@ status:
 	@echo "${GREEN}K3d cluster:${RESET}"
 	@k3d cluster list
 	@echo
+	@echo "${GREEN}Namespaces:${RESET}"
+	@kubectl get ns
+	@echo
 	@echo "${GREEN}Argo CD applications:${RESET}"
 	@kubectl get applications -n argocd
 	@echo
@@ -185,8 +188,18 @@ status:
 	@echo "${GREEN}Port forwarding processes:${RESET}"
 	@ps aux | grep "port-forward" | grep -v grep || echo "No port-forwarding processes"
 	@echo
-	@echo "${GREEN}Application version:${RESET}"
-	@curl -s http://localhost:8888 || echo "${RED}Failed to connect to application${RESET}"
+	@echo "${GREEN}Current application version:${RESET}"
+	@if [ -d "/tmp/tde-los-update" ]; then \
+		cd /tmp/tde-los-update && cat manifests/deployment.yaml | grep -o "wil42/playground:v[12]"; \
+	else \
+		mkdir -p /tmp/tde-los-check && \
+		git clone --quiet https://github.com/anshazet/tde-los-.git /tmp/tde-los-check > /dev/null 2>&1 && \
+		cd /tmp/tde-los-check && cat manifests/deployment.yaml | grep -o "wil42/playground:v[12]" && \
+		rm -rf /tmp/tde-los-check; \
+	fi
+	@echo
+	@echo "${GREEN}Application access:${RESET}"
+	@curl http://localhost:8888 || echo "${RED}Failed to connect to application${RESET}"
 
 # Show help information
 help:
